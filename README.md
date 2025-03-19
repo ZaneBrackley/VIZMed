@@ -1,99 +1,42 @@
-# MedCLIP
+# VIZMed: Vision-Integrated Zero-Shot Medical AI  
 
-[![PyPI version](https://badge.fury.io/py/medclip.svg)](https://badge.fury.io/py/medclip)
-[![Downloads](https://pepy.tech/badge/medclip)](https://pepy.tech/project/medclip)
-![GitHub Repo stars](https://img.shields.io/github/stars/ryanwangzf/medclip)
-![GitHub Repo forks](https://img.shields.io/github/forks/ryanwangzf/medclip)
+## Overview  
+VIZMed is a research project aimed at improving zero-shot learning for medical imaging by expanding upon the MedCLIP model. The goal is to enhance its ability to interpret medical images and reports using multimodal data. This project forms part of my thesis and explores how training on diverse datasets can improve generalization in medical vision-language models.  
 
+## Objectives  
+- Expand MedCLIP’s capabilities to improve zero-shot classification and retrieval.  
+- Train the model on a combination of **CheXpert**, **MIMIC-CXR**, and **PadChest** datasets.  
+- Improve multimodal understanding of medical images and textual reports.  
+- Evaluate performance against existing benchmarks and propose enhancements.  
 
-Wang, Zifeng and Wu, Zhenbang and Agarwal, Dinesh and Sun, Jimeng. (2022). MedCLIP: Contrastive Learning from Unpaired Medical Images and Texts. EMNLP'22.
+## Methodology  
+- **Data Preprocessing**: Curate, clean, and prepare CheXpert, PadChest, and MIMIC-CXR datasets.  
+- **Model Training**: Fine-tune MedCLIP using a combination of supervised and contrastive learning techniques.  
+- **Evaluation**: Measure zero-shot performance using various medical classification and retrieval tasks.  
+- **Optimization**: Experiment with architectural improvements and hyperparameter tuning.  
 
-[Paper PDF](https://arxiv.org/pdf/2210.10163.pdf)
+## Datasets  
+- **CheXpert**: A large labeled dataset of chest X-rays.  
+- **MIMIC-CXR**: A collection of chest radiographs with associated clinical reports.
+- **PadChest**: A dataset containing a wide variety of radiology images and text reports.  
 
-## Download MedCLIP
-Before download MedCLIP, you need to find feasible torch version (with GPU) on https://pytorch.org/get-started/locally/.
+## Getting Started  
+1. Clone this repository:  
+   ```sh
+   git clone https://github.com/ZaneBrackley/VIZMed.git
+   cd VIZMed
+2. Install dependencies:
+   ```sh
+   pip install -r requirements.txt
+3. Download and preprocess the datasets (instructions in data/README.md).
+4. Start training using
+   ```sh
+   python train.py --config configs/train_config.yaml
 
-Then, download MedCLIP by
+## Future Work
+- Extend zero-shot learning beyond chest X-rays to other medical modalities.
+- Explore the integration of transformer-based architectures for improved text-image alignment.
+- Assess real-world applicability through clinical validation studies.
 
-```bash
-pip install git+https://github.com/RyanWangZf/MedCLIP.git
-
-# or
-
-pip install medclip
-```
-
-## Three lines to get pretrained MedCLIP models
-
-```python
-from medclip import MedCLIPModel, MedCLIPVisionModelViT, MedCLIPVisionModel
-
-# load MedCLIP-ResNet50
-model = MedCLIPModel(vision_cls=MedCLIPVisionModel)
-model.from_pretrained()
-
-# load MedCLIP-ViT
-model = MedCLIPModel(vision_cls=MedCLIPVisionModelViT)
-model.from_pretrained()
-```
-
-## As simple as using CLIP
-
-```python
-from medclip import MedCLIPModel, MedCLIPVisionModelViT
-from medclip import MedCLIPProcessor
-from PIL import Image
-
-# prepare for the demo image and texts
-processor = MedCLIPProcessor()
-image = Image.open('./example_data/view1_frontal.jpg')
-inputs = processor(
-    text=["lungs remain severely hyperinflated with upper lobe emphysema", 
-        "opacity left costophrenic angle is new since prior exam ___ represent some loculated fluid cavitation unlikely"], 
-    images=image, 
-    return_tensors="pt", 
-    padding=True
-    )
-
-# pass to MedCLIP model
-model = MedCLIPModel(vision_cls=MedCLIPVisionModelViT)
-model.from_pretrained()
-model.cuda()
-outputs = model(**inputs)
-print(outputs.keys())
-# dict_keys(['img_embeds', 'text_embeds', 'logits', 'loss_value', 'logits_per_text'])
-```
-
-## MedCLIP for Prompt-based Classification
-
-```python
-from medclip import MedCLIPModel, MedCLIPVisionModelViT
-from medclip import MedCLIPProcessor
-from medclip import PromptClassifier
-
-processor = MedCLIPProcessor()
-model = MedCLIPModel(vision_cls=MedCLIPVisionModelViT)
-model.from_pretrained()
-clf = PromptClassifier(model, ensemble=True)
-clf.cuda()
-
-# prepare input image
-from PIL import Image
-image = Image.open('./example_data/view1_frontal.jpg')
-inputs = processor(images=image, return_tensors="pt")
-
-# prepare input prompt texts
-from medclip.prompts import generate_chexpert_class_prompts, process_class_prompts
-cls_prompts = process_class_prompts(generate_chexpert_class_prompts(n=10))
-inputs['prompt_inputs'] = cls_prompts
-
-# make classification
-output = clf(**inputs)
-print(output)
-# {'logits': tensor([[0.5154, 0.4119, 0.2831, 0.2441, 0.4588]], device='cuda:0',
-#       grad_fn=<StackBackward0>), 'class_names': ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Edema', 'Pleural Effusion']}
-```
-
-## How to Get Sentence-level Semantic Labels
-
-You can refer to https://github.com/stanfordmlgroup/chexpert-labeler where wonderful information extraction tools are offered!
+## Acknowledgements
+This work is built upon MedCLIP, leveraging its foundational approach to medical vision-language learning. The original codebase can be found [here](https://github.com/RyanWangZf/MedCLIP).
