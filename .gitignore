@@ -4,5 +4,7 @@ __pycache__/
 *.pyd
 .vscode/
 .idea/
-data/
+datasets/
 venv/
+medclip/
+*.csv
