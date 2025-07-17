@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.vscode/
+.idea/
+datasets/
+venv/
+medclip/
+*.csv
+.env
+medclip_data/
+other/
