@@ -11,3 +11,4 @@ medclip/
 .env
 medclip_data/
 other/
+api_output/

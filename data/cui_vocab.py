@@ -27,7 +27,7 @@ def build_cui_vocab(
     # Load or initialize cache
     cache_path = os.path.join("data/umls", "cui_metadata_cache.csv")
     cache_df = pd.read_csv(cache_path, dtype=str) if os.path.exists(cache_path) else pd.DataFrame(columns=[
-        "cui", "name", "definition", "semantic_type", "related"
+        "cui", "name", "definition", "semantic_type", "parents", "descendants"
     ])
     cache = {row["cui"]: row for _, row in cache_df.iterrows()}
 
@@ -63,7 +63,8 @@ def build_cui_vocab(
         "name": [cache[cui]["name"] for cui in unique_cuis],
         "definition": [cache[cui].get("definition", "") for cui in unique_cuis],
         "semantic_type": [cache[cui].get("semantic_type", "") for cui in unique_cuis],
-        "related": [cache[cui].get("related", "") for cui in unique_cuis],
+        "parents": [str(cache[cui].get("parents", [])) for cui in unique_cuis],
+        "descendants": [str(cache[cui].get("descendants", [])) for cui in unique_cuis],
         "count": [freq[cui] for cui in unique_cuis],
         "source": source
     })

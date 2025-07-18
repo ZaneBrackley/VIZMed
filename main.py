@@ -73,7 +73,6 @@ if __name__ == "__main__":
     verify_image_paths(chexpert_valid_df, "CheXpert (valid)")
 
     chexpert_df = pd.concat([chexpert_train_df, chexpert_valid_df])
-
-    print("\n")
+ 
     padchest_vocab = build_cui_vocab(padchest_df, source="padchest", api_key=api_key)
     chexpert_vocab = build_cui_vocab(chexpert_df, source="chexpert", api_key=api_key)
