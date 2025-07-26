@@ -1,15 +1,21 @@
-import os, ast
+# main.py
+import os, ast, torch
 import pandas as pd
+
 from dotenv import load_dotenv
 
 from preprocess.padchest_parser import load_padchest
 from preprocess.chexpert_parser import load_chexpert
 from data.cui_vocab import build_cui_vocab
+from data.graph.build_graph import build_graph
+from data.umls.enrich_cache import enrich_metadata_cache
+from inspect_graph import main as inspect_graph_main
 
 load_dotenv()
 api_key = os.getenv("UMLS_API_KEY")
 
 CACHE_DIR = os.path.join("cache")
+GRAPH_CACHE = "data/graph/ontology_graph.pt"
 
 def load_or_preprocess(dataset_name: str, split: str = None) -> pd.DataFrame:
     """Load from CSV cache or preprocess and cache."""
@@ -44,8 +50,11 @@ def load_or_preprocess(dataset_name: str, split: str = None) -> pd.DataFrame:
 def verify_image_paths(df, dataset_name: str):
     total = len(df)
     missing = df[~df["image_path"].apply(os.path.exists)]
-
-    print(f"{dataset_name} Images found:          {total - len(missing)}")
+    
+    if dataset_name == "PadChest":
+        print(f"{dataset_name} Images found:                {total - len(missing)}")
+    else:
+        print(f"{dataset_name} Images found:          {total - len(missing)}")
 
     if len(missing) > 0:
         print("  → Sample missing paths:")
@@ -76,3 +85,12 @@ if __name__ == "__main__":
  
     padchest_vocab = build_cui_vocab(padchest_df, source="padchest", api_key=api_key)
     chexpert_vocab = build_cui_vocab(chexpert_df, source="chexpert", api_key=api_key)
+    enrich_metadata_cache(api_key=api_key)
+
+    if not os.path.exists(GRAPH_CACHE):
+        graph = build_graph("data/umls/cui_metadata_cache.csv", False, False)
+    else:
+        graph = torch.load(GRAPH_CACHE)
+        print(f"[✓] Loaded cached ontology graph from {GRAPH_CACHE}")
+
+    inspect_graph_main()
